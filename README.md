@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌐 Proyecto Next.js – Lair Pur
 
-## Getting Started
+Este es un proyecto creado con **Next.js + TypeScript**.  
+Incluye configuración inicial, dependencias comunes y estructura base (`src/`, `public/`, etc.).
 
-First, run the development server:
+---
+
+## 📂 Estructura del proyecto
+
+- `src/` → Código fuente principal (páginas, componentes, estilos).  
+- `public/` → Archivos estáticos (imágenes, íconos, etc.).  
+- `.next/` → Archivos generados automáticamente por Next.js (⚠️ no se versiona).  
+- `node_modules/` → Dependencias instaladas con NPM/PNPM (⚠️ no se versiona).  
+- `package.json` → Configuración del proyecto y dependencias.  
+- `tsconfig.json` → Configuración de TypeScript.  
+- `.gitignore` → Exclusiones para GitHub.  
+
+---
+
+## 🛠️ Requisitos previos
+
+Antes de empezar, asegúrate de tener instalado:
+
+- [Node.js](https://nodejs.org/) (versión recomendada: **18+**)  
+- [npm](https://www.npmjs.com/) o [pnpm](https://pnpm.io/)  
+
+---
+
+## 🚀 Instalación
+
+Clona el repositorio en tu máquina:
 
 ```bash
+git clone https://github.com/IvanRomeroMaurin/Proyecto_Prototipo.git
+cd TU_REPO
+
+***IMPORTANTE***
+Instala las dependencias: introduce el siguiente comando en la raiz del prouecto
+
+npm install
+
+Una vez instaladas las dependencias solo queda iniciar el servidor
+
+Para iniciar el servidor local:
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+El proyecto quedará disponible en 👉 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+📌 Notas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+No se suben las carpetas node_modules/ ni .next/ al repositorio porque se regeneran automáticamente en cada entorno.
 
-## Learn More
+Si alguien clona este repo, solo necesita hacer npm install y npm run dev para levantarlo.
 
-To learn more about Next.js, take a look at the following resources:
+Variables de entorno deben configurarse en un archivo .env.local (no incluido en el repo).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+✍️ Autor: [VERSORI DIGITAL]
+📅 Fecha: 2025
