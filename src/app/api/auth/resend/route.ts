@@ -1,10 +1,12 @@
 // src/app/api/auth/resend/route.ts
 import { NextResponse } from "next/server";
-// imports de Resend...
+// importa y usa tu SDK de Resend como corresponda
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    // tu lógica de envío
+    // tu lógica de envío con Resend
     return NextResponse.json({ ok: true });
   } catch {
     // sin (e) para evitar @typescript-eslint/no-unused-vars

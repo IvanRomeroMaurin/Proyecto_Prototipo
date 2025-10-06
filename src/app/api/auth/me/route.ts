@@ -1,6 +1,8 @@
-// app/api/auth/me/route.ts
-import { NextResponse } from 'next/server';
-import { createSupabaseServer } from '@/lib/supabase/server';
+// src/app/api/auth/me/route.ts
+import { NextResponse } from "next/server";
+import { createSupabaseServer } from "@/lib/supabase/server";
+
+export const runtime = "nodejs";
 
 export async function GET() {
   const supabase = await createSupabaseServer();
@@ -9,9 +11,9 @@ export async function GET() {
   if (!user) return NextResponse.json({ user: null }, { status: 200 });
 
   const { data: perfil } = await supabase
-    .from('usuarios')
-    .select('id_usuario, auth_user_id, nombre, apellido, telefono, email, rol, activo, created_at, updated_at')
-    .eq('auth_user_id', user.id)
+    .from("usuarios")
+    .select("id_usuario, auth_user_id, nombre, apellido, telefono, email, rol, activo, created_at, updated_at")
+    .eq("auth_user_id", user.id)
     .single();
 
   return NextResponse.json({ user, perfil }, { status: 200 });

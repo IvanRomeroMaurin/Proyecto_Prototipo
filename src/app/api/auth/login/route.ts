@@ -14,7 +14,10 @@ export async function POST(req: Request) {
     const supabase = await getSupabaseServerClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 401 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+
     return NextResponse.json({ user: data.user });
   } catch {
     return NextResponse.json({ error: "Error inesperado" }, { status: 500 });
