@@ -1,11 +1,11 @@
-// src/app/api/auth/logout/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
   await supabase.auth.signOut();
-  return NextResponse.json({ ok: true });
+  return NextResponse.redirect(new URL("/", req.url));
 }
