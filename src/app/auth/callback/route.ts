@@ -1,26 +1,56 @@
 // src/app/auth/callback/route.ts
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-export const runtime = "nodejs";
+export const runtime = "nodejs";           // <— importante en Vercel
+export const dynamic = "force-dynamic";    // evita caché en este paso
 
-export async function GET(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies });
-  const { searchParams } = new URL(req.url);
-  const code = searchParams.get("code");
+function createServerSupabase() {
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // (publishable/anon)
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
+}
 
-  // Intercambia el code por la sesión (setea las cookies automáticamente)
-  if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      // si falla, redirigí con mensaje
-      return NextResponse.redirect(
-        new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, req.url)
-      );
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const token_hash = url.searchParams.get("token_hash");
+  const type = (url.searchParams.get("type") ?? "email") as
+    | "email"
+    | "recovery"
+    | "invite"
+    | "magiclink";
+
+  const next = url.searchParams.get("next") ?? "/";
+
+  if (token_hash) {
+    const supabase = createServerSupabase();
+
+    // Con email-confirmation/magic link se usa verifyOtp con token_hash
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+
+    // Si no hubo error, ya quedó seteada la sesión en cookies HttpOnly
+    if (!error) {
+      return NextResponse.redirect(new URL(next, url.origin));
     }
   }
 
-  // listo: ya hay sesión en tu dominio
-  return NextResponse.redirect(new URL("/cuenta", req.url));
+  // Si algo falla, te mando a /auth/login con un mensajito
+  const to = new URL("/auth/login?error=confirm", url.origin);
+  return NextResponse.redirect(to);
 }
