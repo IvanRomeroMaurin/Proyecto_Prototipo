@@ -19,14 +19,13 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
   try {
     const { email, password, nombre, apellido, telefono } = (await req.json()) as Body;
-
     if (!email || !password) {
       return NextResponse.json({ error: "Email y password son requeridos" }, { status: 400 });
     }
 
     const supabase = await getSupabaseServerClient();
 
-    // ¡Importante! Dejá SOLO el signUp; el perfil se crea por trigger en DB.
+    // Dejar SOLO signUp; el perfil lo crea tu trigger
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -38,10 +37,7 @@ export async function POST(req: Request) {
       },
     });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ user: data.user });
   } catch {
     return NextResponse.json({ error: "Error inesperado" }, { status: 500 });

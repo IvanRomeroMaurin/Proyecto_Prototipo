@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 import { cookies, type CookieOptions } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
+export const runtime = "nodejs"; // o "edge" si así lo necesitas
+
+// 👇 tiene que ser async
 export async function GET(req: Request) {
+  // 👇 cookies() es async en Next 15 (Route Handlers)
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -14,6 +18,7 @@ export async function GET(req: Request) {
         get(name: string) {
           return cookieStore.get(name)?.value ?? "";
         },
+        // 👇 usá esta sobrecarga (name, value, options)
         set(name: string, value: string, options: CookieOptions) {
           cookieStore.set(name, value, options);
         },
@@ -24,15 +29,12 @@ export async function GET(req: Request) {
     }
   );
 
-  // Ejemplo: si intercambiás un "code" de Supabase que viene en la URL
+  // tu lógica (si lees ?code=... de Supabase, etc.)
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
   if (code) {
-    // Normalmente Supabase maneja el seteo de la sesión con el callback URL
-    // (si usás el enlace de confirmación de email de Supabase).
-    // De no usarlo, harías aquí el intercambio según tu flujo.
+    // si tu flujo necesita algo acá, dejalo
   }
 
-  // Redirigí a donde corresponda luego del callback
   return NextResponse.redirect(new URL("/", req.url));
 }

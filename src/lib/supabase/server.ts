@@ -2,10 +2,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies, type CookieOptions } from "next/headers";
 
-/**
- * Devuelve un cliente de Supabase ya configurado para SSR (Next 15).
- * IMPORTANTE: cookies() es async en Route Handlers, por eso este helper es async.
- */
 export async function getSupabaseServerClient() {
   const cookieStore = await cookies();
 
