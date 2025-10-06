@@ -1,12 +1,12 @@
 // src/app/auth/callback/route.ts
 import { NextResponse } from "next/server";
-import { cookies, type CookieOptions } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-export const runtime = "nodejs"; // si usas edge, cambia a "edge"
+export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  // 👇 en Route Handlers de Next 15 hay que await
+  // En Route Handlers de Next 15, cookies() es async
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -15,25 +15,24 @@ export async function GET(req: Request) {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value ?? "";
+          return cookieStore.get(name)?.value;
         },
-        // 👇 usa la sobrecarga (name, value, options) — NO el objeto
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set(name, value, options);
+          // Forma recomendada por Supabase (objeto)
+          cookieStore.set({ name, value, ...options });
         },
-        remove(name: string, options: CookieOptions = {}) {
-          cookieStore.set(name, "", { ...options, maxAge: 0 });
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: "", ...options });
         },
       },
     }
   );
 
-  // Si usas el code de supabase en la URL:
-  const { searchParams } = new URL(req.url);
-  const code = searchParams.get("code");
-  if (code) {
-    // normal/mente supabase maneja el seteo de sesión via callback URL
-  }
+  // Usarlo para evitar warning (o redirigí en base a user)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return NextResponse.redirect(new URL("/", req.url));
+  const redirectTo = user ? "/cuenta" : "/";
+  return NextResponse.redirect(new URL(redirectTo, req.url));
 }

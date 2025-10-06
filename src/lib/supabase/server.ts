@@ -1,6 +1,6 @@
 // src/lib/supabase/server.ts
-import { createServerClient } from "@supabase/ssr";
-import { cookies, type CookieOptions } from "next/headers";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 /**
  * Helper SSR para Next 15 (Route Handlers en runtime node).
@@ -15,19 +15,19 @@ export async function getSupabaseServerClient() {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value ?? "";
+          return cookieStore.get(name)?.value;
         },
-        // usar SIEMPRE la sobrecarga (name, value, options)
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set(name, value, options);
+          // Mantener la forma por objeto, tal como documenta Supabase
+          cookieStore.set({ name, value, ...options });
         },
-        remove(name: string, options: CookieOptions = {}) {
-          cookieStore.set(name, "", { ...options, maxAge: 0 });
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: "", ...options });
         },
       },
     }
   );
 }
 
-// 👇 Alias para mantener compatibilidad con código que importa createSupabaseServer
+// Alias para compatibilidad con imports existentes
 export const createSupabaseServer = getSupabaseServerClient;
