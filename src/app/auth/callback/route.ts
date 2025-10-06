@@ -1,40 +1,32 @@
-// app/auth/callback/route.ts (o src/app/... si usás /src)
-export const runtime = "nodejs";
-
+// src/app/auth/callback/route.ts
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies, type CookieOptions } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export async function GET(req: Request) {
-  // cookies() puede ser objeto o Promise en algunos tipos/builds → normalizamos
-  const storeMaybe = cookies() as unknown;
-
-  const cookieStore: {
-    get: (name: string) => { value: string } | undefined;
-    set: (name: string, value: string, options?: CookieOptions) => void;
-  } =
-    typeof (storeMaybe as any)?.then === "function"
-      ? await (storeMaybe as Promise<any>)
-      : (storeMaybe as any);
+  // 👇 AHORA ES ASÍ
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
-        set: (name: string, value: string, options: CookieOptions) =>
-          cookieStore.set(name, value, options as any),
-        remove: (name: string, options: CookieOptions) =>
-          cookieStore.set(name, "", { ...(options as any), maxAge: 0 }),
+        get(name: string) {
+          return cookieStore.get(name)?.value ?? "";
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // En Next 15 podés usar la sobrecarga name, value, options
+          cookieStore.set(name, value, options);
+        },
+        remove(name: string, options: CookieOptions = {}) {
+          cookieStore.set(name, "", { ...options, maxAge: 0 });
+        },
       },
     }
   );
 
-  // Intercambia ?code= por sesión y escribe las cookies
-  await supabase.auth.exchangeCodeForSession(req.url);
+  // … tu lógica (ej: leer query params, intercambiar el código, etc.)
 
-  // Redirigí a donde quieras
-  const redirectTo = new URL("/", new URL(req.url).origin);
-  return NextResponse.redirect(redirectTo);
+  return NextResponse.redirect(new URL("/", req.url));
 }
