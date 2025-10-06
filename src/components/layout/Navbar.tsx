@@ -1,16 +1,65 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+"use client";
 
-import NavbarClient from "./NavbarClient";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 
-export default async function Navbar() {
-  const supabase = await createSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-  const initialUser = user
-    ? { id: user.id, email: user.email, user_metadata: user.user_metadata }
-    : null;
+export default function Navbar() {
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
-  return <NavbarClient initialUser={initialUser} />;
+  useEffect(() => {
+    // Obtener usuario actual al cargar
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+
+    // Escuchar cambios en la sesión (login/logout)
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      router.refresh(); // actualiza el árbol de React
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/"); // redirige al inicio
+  };
+
+  return (
+    <nav className="flex justify-between items-center p-4 border-b border-gray-800">
+      <Link href="/" className="text-lg font-semibold">Le Parfum</Link>
+
+      <div className="flex items-center gap-4">
+        {!user ? (
+          <>
+            <Link href="/auth/login" className="hover:text-gray-400">Iniciar sesión</Link>
+            <Link href="/auth/register" className="hover:text-gray-400">Registrarse</Link>
+          </>
+        ) : (
+          <>
+            <span className="text-sm text-gray-300">
+              Hola, {user.user_metadata?.nombre || user.email}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition"
+            >
+              Cerrar sesión
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
 }
