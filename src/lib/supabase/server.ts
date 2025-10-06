@@ -1,12 +1,6 @@
-// src/lib/supabase/server.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies, type CookieOptions } from "next/headers";
 
-/**
- * Helper SSR para Next 15 (Route Handlers en runtime node).
- * cookies() es ASYNC, por eso este helper es async.
- * Exportamos dos alias para evitar errores de import en otros archivos.
- */
 export async function getSupabaseServerClient() {
   const cookieStore = await cookies();
 
@@ -18,7 +12,6 @@ export async function getSupabaseServerClient() {
         get(name: string) {
           return cookieStore.get(name)?.value ?? "";
         },
-        // usar siempre la sobrecarga (name, value, options)
         set(name: string, value: string, options: CookieOptions) {
           cookieStore.set(name, value, options);
         },
@@ -29,6 +22,3 @@ export async function getSupabaseServerClient() {
     }
   );
 }
-
-// Alias para código que importe el nombre anterior:
-export const createSupabaseServer = getSupabaseServerClient;

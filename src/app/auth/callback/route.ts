@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import { cookies, type CookieOptions } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-export const runtime = "nodejs"; // si usás edge, ajustalo, pero nodejs está bien
+export const runtime = "nodejs"; // si usas edge, cambia a "edge"
 
 export async function GET(req: Request) {
-  // cookies() ES ASYNC en Route Handlers (Next 15 runtime node)
+  // 👇 en Route Handlers de Next 15 hay que await
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -17,6 +17,7 @@ export async function GET(req: Request) {
         get(name: string) {
           return cookieStore.get(name)?.value ?? "";
         },
+        // 👇 usa la sobrecarga (name, value, options) — NO el objeto
         set(name: string, value: string, options: CookieOptions) {
           cookieStore.set(name, value, options);
         },
@@ -27,13 +28,12 @@ export async function GET(req: Request) {
     }
   );
 
-  // Si necesitás leer el code que llega en la URL:
+  // Si usas el code de supabase en la URL:
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
   if (code) {
-    // Tu lógica si hicieras intercambio manual (normalmente Supabase ya setea sesión con el callback url).
+    // normal/mente supabase maneja el seteo de sesión via callback URL
   }
 
-  // Donde quieras redirigir después del callback:
   return NextResponse.redirect(new URL("/", req.url));
 }
