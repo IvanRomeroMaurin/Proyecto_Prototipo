@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type User } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,35 +11,28 @@ const supabase = createClient(
 );
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    // Obtener usuario actual al cargar
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
 
-    // Escuchar cambios en la sesión (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
-      router.refresh(); // actualiza el árbol de React
+      router.refresh();
     });
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    return () => sub.subscription.unsubscribe();
   }, [router]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/"); // redirige al inicio
+    router.push("/");
   };
 
   return (
     <nav className="flex justify-between items-center p-4 border-b border-gray-800">
       <Link href="/" className="text-lg font-semibold">Le Parfum</Link>
-
       <div className="flex items-center gap-4">
         {!user ? (
           <>
