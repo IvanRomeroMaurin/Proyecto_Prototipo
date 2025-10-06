@@ -4,7 +4,6 @@ import { cookies, type CookieOptions } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
 export async function GET(req: Request) {
-  // 👇 AHORA ES ASÍ
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -16,7 +15,6 @@ export async function GET(req: Request) {
           return cookieStore.get(name)?.value ?? "";
         },
         set(name: string, value: string, options: CookieOptions) {
-          // En Next 15 podés usar la sobrecarga name, value, options
           cookieStore.set(name, value, options);
         },
         remove(name: string, options: CookieOptions = {}) {
@@ -26,7 +24,15 @@ export async function GET(req: Request) {
     }
   );
 
-  // … tu lógica (ej: leer query params, intercambiar el código, etc.)
+  // Ejemplo: si intercambiás un "code" de Supabase que viene en la URL
+  const { searchParams } = new URL(req.url);
+  const code = searchParams.get("code");
+  if (code) {
+    // Normalmente Supabase maneja el seteo de la sesión con el callback URL
+    // (si usás el enlace de confirmación de email de Supabase).
+    // De no usarlo, harías aquí el intercambio según tu flujo.
+  }
 
+  // Redirigí a donde corresponda luego del callback
   return NextResponse.redirect(new URL("/", req.url));
 }
