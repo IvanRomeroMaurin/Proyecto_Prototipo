@@ -24,7 +24,7 @@ export default function ContactHeader() {
             Escribinos para consultas de productos, envíos, mayoristas o postventa.
           </p>
         </div>
-      </div>
+      </div> 
     </section>
   );
 }

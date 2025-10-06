@@ -1,0 +1,35 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────────────────────────
+// ENUMS
+// ───────────────────────────────────────────────
+enum RolUsuario {
+  cliente
+  admin
+  @@map("rol_usuario")  // <- Esto mapea el enum de Prisma con el nombre SQL
+}
+
+// ───────────────────────────────────────────────
+// MODELOS
+// ───────────────────────────────────────────────
+model Usuario {
+  id_usuario BigInt     @id @default(autoincrement())
+  nombre     String
+  apellido   String
+  email      String     @unique @db.Citext
+  telefono   String?    @db.VarChar(100)
+  rol        RolUsuario @default(cliente)
+  activo     Boolean    @default(true)
+  created_at DateTime   @default(now())
+
+  @@map("usuarios")     // <- nombre de la tabla real en la BD
+}
