@@ -1,26 +1,52 @@
-// app/auth/callback/route.ts  (o src/app/auth/callback/route.ts)
-export const runtime = "nodejs"; // cookies mutables
+// app/auth/callback/route.ts
+export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
-// Helper inlined para evitar errores de import
+// ✅ Adaptador de cookies compatible con Next 15 y Supabase
 function createSupabaseServer() {
-  const cookieStore = cookies();
+  const cookieStore = cookies(); // tipado readonly
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          try {
+            const c = (
+              cookieStore as unknown as {
+                get: (n: string) => { value: string } | undefined;
+              }
+            ).get(name);
+            return c?.value;
+          } catch {
+            return undefined;
+          }
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            (
+              cookieStore as unknown as {
+                set: (n: string, v: string, o?: CookieOptions) => void;
+              }
+            ).set(name, value, options);
+          } catch {
+            /* no-op en runtimes que no permitan mutar */
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: "", ...options, maxAge: 0 });
+          try {
+            (
+              cookieStore as unknown as {
+                set: (n: string, v: string, o?: CookieOptions) => void;
+              }
+            ).set(name, "", { ...options, maxAge: 0 });
+          } catch {
+            /* no-op */
+          }
         },
       },
     }
@@ -29,10 +55,11 @@ function createSupabaseServer() {
 
 export async function GET(req: Request) {
   const supabase = createSupabaseServer();
-  // Intercambia ?code=... por sesión y escribe cookies
+
+  // 🔄 Intercambia el ?code= por sesión y escribe cookies
   await supabase.auth.exchangeCodeForSession(req.url);
 
-  // Redirige al home
+  // 🔁 Redirige al home (podés cambiar "/" por "/cuenta" o lo que quieras)
   const redirectTo = new URL("/", new URL(req.url).origin);
-  return NextResponse.redirect(redirectTo, { status: 302 });
+  return NextResponse.redirect(redirectTo);
 }
