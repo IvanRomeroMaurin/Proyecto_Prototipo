@@ -1,4 +1,4 @@
-# 🌐 Proyecto Next.js – Lair Pur
+# 🌐 Proyecto Next.js
 
 Este es un proyecto creado con **Next.js + TypeScript**.  
 Incluye configuración inicial, dependencias comunes y estructura base (`src/`, `public/`, etc.).
