@@ -55,5 +55,5 @@ Si alguien clona este repo, solo necesita hacer npm install y npm run dev para l
 
 Variables de entorno deben configurarse en un archivo .env.local (no incluido en el repo).
 
-✍️ Autor: [VERSORI DIGITAL]
+✍️ Autor: []
 📅 Fecha: 2025
